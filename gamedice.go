@@ -1,9 +1,7 @@
 package gamedice
 
-import(
-	"fmt"
-)
+import "fmt"
 
-func Test()
-	fmt.Println("GoDice!")
-	return
+func Test() {
+	fmt.Sprintf("GoDice!")
+}
