@@ -1,9 +1,9 @@
 package gamedice
 
 import(
-	'fmt'
+	"fmt"
 )
 
-func test()
-	fmt.println("godice!")
+func Test()
+	fmt.Println("GoDice!")
 	return
