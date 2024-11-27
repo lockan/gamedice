@@ -38,7 +38,7 @@ func TestZeroInput(t *testing.T) {
 	}
 }
 
-func TestForcedResultRoll(t *testing.T) {
+func TestMaxUint64(t *testing.T) {
 	testroll := 1
 	t.Logf("Input is %d", testroll)
 	roll := forcedResultRoll(uint64(testroll), math.MaxUint64)

@@ -7,6 +7,7 @@ import (
 )
 
 // Bad Input Handler (e.g. if 0 is provided for a uint64N call.)
+// TODO: proper implementation, update tests
 func badInputHandler(i any) uint64 {
 	rec := recover()
 	var result uint64
