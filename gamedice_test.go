@@ -47,3 +47,44 @@ func TestMaxUint64(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestRollBatch(t *testing.T) {
+	var count, sides uint64
+	count = 4
+	sides = 6
+	t.Logf("Roll is %dD%d", count, sides)
+	batch := RollBatch(count, sides)
+	t.Log("Batch Result is:")
+	t.Log(batch)
+
+	if uint64(len(batch)) != count {
+		t.Log("Got incorrect batch size as result!")
+		t.Fail()
+	}
+
+	for i := range batch {
+		if batch[i] <= 0 || batch[i] > math.MaxUint64 {
+			t.Logf("One of the results is an invalid value: %d", batch[i])
+			t.Fail()
+		}
+	}
+}
+
+func TestRollN(t *testing.T) {
+	var count, sides uint64
+	count = 4
+	sides = 6
+	t.Logf("Roll is %dD%d", count, sides)
+	roll := RollN(uint64(count), sides)
+	t.Logf("Result is %d", roll)
+
+	if roll <= 0 || roll > math.MaxUint64 {
+		t.Log("Rolled an invalid value, somehow!!")
+		t.Fail()
+	}
+
+	if roll > count*sides {
+		t.Log("Rolled value is greater than maximum possible roll.")
+		t.Fail()
+	}
+}

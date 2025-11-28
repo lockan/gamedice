@@ -32,13 +32,36 @@ func Roll(sides uint64) uint64 {
 	}
 }
 
-//Roll NdM -
+// Roll MdN
+func RollN(count uint64, sides uint64) uint64 {
+	defer badInputHandler(count)
+	defer badInputHandler(sides)
+
+	var sumroll uint64
+	values := RollBatch(count, sides)
+	for i := range values {
+		sumroll = sumroll + values[i]
+	}
+	return sumroll
+}
+
+// Roll MdN as batch of unique dice values
+func RollBatch(count uint64, sides uint64) []uint64 {
+	defer badInputHandler(count)
+	defer badInputHandler(sides)
+
+	batch := make([]uint64, count)
+	for i := 0; uint64(i) < count; i++ {
+		batch[i] = Roll(sides)
+	}
+	return batch
+}
 
 //Parse Roll String in format XdN +/- Y
 
 // ===== misc private test functions
 func forcedResultRoll(sides uint64, forced uint64) uint64 {
 	result := Roll(sides)
-	result = forced
+	result = forced // override to the value we want.
 	return result
 }
