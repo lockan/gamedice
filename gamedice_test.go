@@ -88,3 +88,15 @@ func TestRollN(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestSanitize(t *testing.T) {
+	// Test string sanitization
+	var teststring string = "    4 D 6 + 	2			"
+	var expected string = "4d6+2"
+	var result string = sanitize(teststring)
+	t.Logf("Input string: %s; Expecting: %s", teststring, expected)
+	t.Logf("Parsed string: %s", result)
+	if result != expected {
+		t.Fail()
+	}
+}
