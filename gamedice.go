@@ -60,8 +60,8 @@ func RollBatch(count uint64, sides uint64) []uint64 {
 
 func sanitize(input string) string {
 	// strip all whitespace, convert to lowercase.
-	clean := strings.TrimSpace(input)
-	clean = strings.Join(strings.Fields(clean), "")
+	clean := strings.TrimSpace(input)               // removes leading/trailing space
+	clean = strings.Join(strings.Fields(clean), "") // removes internal white space
 	clean = strings.ToLower(clean)
 	return clean
 }
@@ -101,6 +101,7 @@ func ParseRoll(rollstring string) string {
 	// counts and sides cannot be zero (modifiers can be even if it's silly)
 	// Handle different ordered tokens e.g. mdn+x, x+mdn, mdn+kdn
 	// rollstring could result in negative sums; If it does return zero.
+	// if it doesn't contain at least one 'd' it isn't valid.
 
 	// Variations:
 	// dN - both upper and lower case
