@@ -58,20 +58,49 @@ func RollBatch(count uint64, sides uint64) []uint64 {
 	return batch
 }
 
-func sanitize(inputString string) string {
-	clean := strings.TrimSpace(inputString)
+func sanitize(input string) string {
+	// strip all whitespace, convert to lowercase.
+	clean := strings.TrimSpace(input)
 	clean = strings.Join(strings.Fields(clean), "")
 	clean = strings.ToLower(clean)
 	return clean
 }
 
+func isValidRoll(rollstring string) bool {
+	// check for only allowable characters in a sanitized roll string
+	var validchars string = "0123456789+-d"
+	// check for invalid characters
+	for i := range rollstring {
+		if !strings.Contains(validchars, string(rollstring[i])) {
+			return false
+		}
+	}
+	// ensure we have at least one instance of a 'd'
+	if !strings.ContainsRune(rollstring, 'd') {
+		return false
+	}
+	return true
+}
+
+func tokenize(rollstring string) []string {
+	// Algo:
+	// Given input string s
+	// Init tokens []string
+	// walk s from index 0 ... to len(s)
+	// Each time a separator character is found:
+	// 		add the preceding token to tokens []string,
+	// 		followed by the separator as a separate token
+	// stop at end of of s, return tokenized slice
+	tokens := []string{}
+	return tokens
+}
+
 // Parse Roll String in format XdN +/- Y
 func ParseRoll(rollstring string) string {
 	//TODO - implement me
-	// Considerations: should handle both upper and lower case by converting to lowercase.
 	// counts and sides cannot be zero (modifiers can be even if it's silly)
-	// Handle whitespace in input by stripping it out.
 	// Handle different ordered tokens e.g. mdn+x, x+mdn, mdn+kdn
+	// rollstring could result in negative sums; If it does return zero.
 
 	// Variations:
 	// dN - both upper and lower case
@@ -82,15 +111,8 @@ func ParseRoll(rollstring string) string {
 	// X+/-MdN
 
 	// Algo:
-	// Given input string s
-	// Trim all whitespace from s and convert to lowercase
-	// Init tokens []string
-	// walk s from index 0 ... to len(s)
-	// Each time a separator character is found:
-	// 		add the preceding token to tokens []string,
-	// 		followed by the separator as a separate token
-	// stop at end of of s
-	// Walk tokens array. For each token:
+	// Given a slice of token string
+	// For each token:
 	// 		If token is not a separator, check for 'd' in string. If d is found:
 	// 			if d is the first character RollN and return result
 	//			if d is NOT the first character RollBatch([0][1]) and return result
@@ -100,6 +122,8 @@ func ParseRoll(rollstring string) string {
 	// var d rune = 'd'
 	// var tokens = [...]string{}
 	rollstring = sanitize(rollstring)
+	//tokens := tokenize(rollstring)
+
 	return rollstring
 }
 

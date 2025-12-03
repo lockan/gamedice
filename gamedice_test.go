@@ -100,3 +100,26 @@ func TestSanitize(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestValidate(t *testing.T) {
+	var valid = "10-2d10"
+	var invalid = "40xd7+5yyy"
+	var hasD = "d4"
+	var missingD = "1+2"
+	if !isValidRoll(valid) {
+		t.Logf("isValidRoll returned a false negative!")
+		t.Fail()
+	}
+	if isValidRoll(invalid) {
+		t.Logf("isValidRoll got a false positive!")
+		t.Fail()
+	}
+	if !isValidRoll(hasD) {
+		t.Logf("isValidRoll: could not find character 'd'")
+		t.Fail()
+	}
+	if isValidRoll(missingD) {
+		t.Logf("isValidRoll: found character 'd' in string that has")
+		t.Fail()
+	}
+}
