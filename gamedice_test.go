@@ -21,11 +21,6 @@ func TestRoll(t *testing.T) {
 		t.Log("Result is <= 0")
 		t.Fail()
 	}
-
-	if roll > math.MaxUint64 {
-		t.Log("Result greater than max Uint64")
-		t.Fail()
-	}
 }
 
 func TestZeroInput(t *testing.T) {
@@ -44,6 +39,28 @@ func TestMaxUint64(t *testing.T) {
 	roll := forcedResultRoll(uint64(testroll), math.MaxUint64)
 	t.Logf("Roll is %d", roll)
 	if roll != math.MaxUint64 {
+		t.Fail()
+	}
+}
+
+func TestMaxUint64Overflow(t *testing.T) {
+	testroll := 1
+	t.Logf("Input is %d", testroll)
+	roll := forcedResultRoll(uint64(testroll), math.MaxUint64)
+	overflow := roll + 1
+	t.Logf("Roll is %d", overflow)
+	if overflow != 0 {
+		t.Fail()
+	}
+}
+
+func TestRollNOverflow(t *testing.T) {
+	testroll := 1
+	t.Logf("Input is %d", testroll)
+	roll := forcedResultRoll(uint64(testroll), math.MaxUint64)
+	overflow := roll + 1
+	t.Logf("Roll is %d", overflow)
+	if overflow != 0 {
 		t.Fail()
 	}
 }

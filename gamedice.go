@@ -21,19 +21,27 @@ func badInputHandler(i any) uint64 {
 	return result
 }
 
+// Test for overflow. uint64 can't be a negative, so overflows to zero.
+// If a summed roll results in a value less than the previous we can assume overflow has occurred.
+// We're summing game dice here, so realistically if a number is that large: just return MaxUint64.
+func overflowHandler(current uint64, previous uint64) uint64 {
+	// check for overlow
+	if current < previous {
+		fmt.Printf("uint64 overflow detected! returning max uint64.MaxValue")
+		return math.MaxUint64
+	} else {
+		return current
+	}
+}
+
 // Roll dN die
 func Roll(sides uint64) uint64 {
 	defer badInputHandler(sides)
 	result := rand.Uint64N(sides)
-
-	if result >= math.MaxUint64 {
-		return math.MaxUint64
-	} else {
-		return result + 1
-	}
+	return result + 1
 }
 
-// Roll MdN
+// Roll MdN dice and return the total value
 func RollN(count uint64, sides uint64) uint64 {
 	defer badInputHandler(count)
 	defer badInputHandler(sides)
@@ -41,12 +49,14 @@ func RollN(count uint64, sides uint64) uint64 {
 	var sumroll uint64
 	values := RollBatch(count, sides)
 	for i := range values {
-		sumroll = sumroll + values[i]
+		nextsum := sumroll + values[i]
+		defer overflowHandler(nextsum, sumroll)
+		sumroll = nextsum
 	}
 	return sumroll
 }
 
-// Roll MdN as batch of unique dice values
+// Roll MdN as batch of M unique dice values of type dN
 func RollBatch(count uint64, sides uint64) []uint64 {
 	defer badInputHandler(count)
 	defer badInputHandler(sides)
