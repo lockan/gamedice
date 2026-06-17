@@ -80,7 +80,7 @@ func TestRollBatch(t *testing.T) {
 	}
 
 	for i := range batch {
-		if batch[i] <= 0 || batch[i] > math.MaxUint64 {
+		if batch[i] <= 0 {
 			t.Logf("One of the results is an invalid value: %d", batch[i])
 			t.Fail()
 		}
@@ -138,5 +138,25 @@ func TestValidate(t *testing.T) {
 	if isValidRoll(missingD) {
 		t.Logf("isValidRoll: found character 'd' in string that has")
 		t.Fail()
+	}
+}
+
+func TestTokenize(t *testing.T) {
+	//TODO: expand this to a variety of test strings.
+	var teststring string = "14d6+23d4-1"
+	expected := []string{"14d6", "+", "23d4", "-", "1"}
+	var tokens []string
+	tokens = tokenize(teststring)
+	t.Logf("Test string: %s", teststring)
+	t.Logf("Tokens: %s", tokens)
+	if len(expected) != len(tokens) {
+		t.Logf("Tokens array is different length than expected length")
+		t.Fail()
+	}
+	for i := range tokens {
+		if tokens[i] != expected[i] {
+			t.Logf("tokens[i] does not match expected[i]")
+			t.Fail()
+		}
 	}
 }

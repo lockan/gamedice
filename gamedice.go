@@ -7,6 +7,9 @@ import (
 	"strings"
 )
 
+const VALIDCHARS string = "0123456789+-d"
+const OPERATORS string = "+-"
+
 // Bad Input Handler (e.g. if 0 is provided for a uint64N call.)
 // TODO: proper implementation, update tests
 func badInputHandler(i any) uint64 {
@@ -78,10 +81,10 @@ func sanitize(input string) string {
 
 func isValidRoll(rollstring string) bool {
 	// check for only allowable characters in a sanitized roll string
-	var validchars string = "0123456789+-d"
+
 	// check for invalid characters
 	for i := range rollstring {
-		if !strings.Contains(validchars, string(rollstring[i])) {
+		if !strings.Contains(VALIDCHARS, string(rollstring[i])) {
 			return false
 		}
 	}
@@ -100,13 +103,40 @@ func tokenize(rollstring string) []string {
 	// Each time a separator character is found:
 	// 		add the preceding token to tokens []string,
 	// 		followed by the separator as a separate token
-	// stop at end of of s, return tokenized slice
-	tokens := []string{}
+	// stop at end of of s, record final token, return tokenized slice
+	var tokens []string
+	var nextchar rune
+	last_index := len(rollstring) - 1
+	// fmt.Printf("\nrollstring length: %d; last_index: %d", len(rollstring), last_index)
+
+	for i := 0; i <= last_index; i++ {
+		current_token := string(rollstring[i])
+		if i == last_index {
+			// fmt.Printf("Seek got last index. Recording token: ")
+			tokens = append(tokens, current_token)
+			// fmt.Printf("%s", tokens)
+		}
+		for j := i + 1; j <= last_index; j++ {
+			// fmt.Printf("\ni: %d (%s), j:%d (%s)", i, string(rollstring[i]), j, string(rollstring[j]))
+			nextchar = rune(rollstring[j])
+			if strings.ContainsRune(OPERATORS, nextchar) {
+				// fmt.Printf("got operator %s; recording tokens: ", string(nextchar))
+				tokens = append(tokens, current_token)
+				tokens = append(tokens, string(nextchar))
+				// fmt.Printf("%s", tokens)
+				// fmt.Printf("\nSetting i to %d", j)
+				i = j
+				break
+			} else {
+				current_token = current_token + string(nextchar)
+			}
+		}
+	}
 	return tokens
 }
 
 // Parse Roll String in format XdN +/- Y
-func ParseRoll(rollstring string) string {
+func parseRoll(rollstring string) []string {
 	//TODO - implement me
 	// counts and sides cannot be zero (modifiers can be even if it's silly)
 	// Handle different ordered tokens e.g. mdn+x, x+mdn, mdn+kdn
@@ -122,20 +152,33 @@ func ParseRoll(rollstring string) string {
 	// X+/-MdN
 
 	// Algo:
-	// Given a slice of token string
+	// Given a slice of token strings
 	// For each token:
-	// 		If token is not a separator, check for 'd' in string. If d is found:
+	// 		If token is not a separator, check for 'd' in string.
+	// 		If d is found:
 	// 			if d is the first character RollN and return result
 	//			if d is NOT the first character RollBatch([0][1]) and return result
+	//		If d is NOT found:
+	// 			If token is a static int value, record and continue...
 	//		If token is a separator, determine which math operation, move to next token, and sum with previous result
 	// Finally: return total
 	// var separators = [...]rune{'+', '-'}
 	// var d rune = 'd'
 	// var tokens = [...]string{}
 	rollstring = sanitize(rollstring)
-	//tokens := tokenize(rollstring)
+	tokens := tokenize(rollstring)
+	return tokens
+}
 
-	return rollstring
+// Carries out a complex series of rolls from a list of roll tokens. e.g. parseRoll() results.
+// Returns the total result.
+func ComplexRoll(tokens []string) uint64 {
+	// TODO: Implement
+	for token := range tokens {
+		fmt.Printf("%s", tokens[token])
+	}
+	var result uint64
+	return result
 }
 
 // ===== misc private test functions
