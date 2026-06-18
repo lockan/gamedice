@@ -10,18 +10,14 @@ import (
 const VALIDCHARS string = "0123456789+-d"
 const OPERATORS string = "+-"
 
-// Bad Input Handler (e.g. if 0 is provided for a uint64N call.)
-// TODO: proper implementation, update tests
-func badInputHandler(i any) uint64 {
+// Zero Input Handler (e.g. if 0 is provided for a uint64N call.)
+func zeroInputHandler(i uint64) uint64 {
 	rec := recover()
-	var result uint64
 	if rec != nil {
 		fmt.Printf("Handled bad input value: %d", i)
-		result = 0
-	} else {
-		result = 1
+		return 0
 	}
-	return result
+	return i
 }
 
 // Test for overflow. uint64 can't be a negative, so overflows to zero.
@@ -39,15 +35,15 @@ func overflowHandler(current uint64, previous uint64) uint64 {
 
 // Roll dN die
 func Roll(sides uint64) uint64 {
-	defer badInputHandler(sides)
+	defer zeroInputHandler(sides)
 	result := rand.Uint64N(sides)
 	return result + 1
 }
 
 // Roll MdN dice and return the total value
 func RollN(count uint64, sides uint64) uint64 {
-	defer badInputHandler(count)
-	defer badInputHandler(sides)
+	defer zeroInputHandler(count)
+	defer zeroInputHandler(sides)
 
 	var sumroll uint64
 	values := RollBatch(count, sides)
@@ -61,8 +57,8 @@ func RollN(count uint64, sides uint64) uint64 {
 
 // Roll MdN as batch of M unique dice values of type dN
 func RollBatch(count uint64, sides uint64) []uint64 {
-	defer badInputHandler(count)
-	defer badInputHandler(sides)
+	defer zeroInputHandler(count)
+	defer zeroInputHandler(sides)
 
 	batch := make([]uint64, count)
 	for i := 0; uint64(i) < count; i++ {
@@ -79,17 +75,32 @@ func sanitize(input string) string {
 	return clean
 }
 
+func isDieRoll(rollstring string) bool {
+	// ensure we have at least one instance of a 'd'
+	if !strings.ContainsRune(rollstring, 'd') {
+		return false
+	}
+	return true
+}
+
 func isValidRoll(rollstring string) bool {
 	// check for only allowable characters in a sanitized roll string
-
 	// check for invalid characters
 	for i := range rollstring {
 		if !strings.Contains(VALIDCHARS, string(rollstring[i])) {
 			return false
 		}
 	}
-	// ensure we have at least one instance of a 'd'
-	if !strings.ContainsRune(rollstring, 'd') {
+	// ensure it contains at least one 'd'
+	if !isDieRoll(rollstring) {
+		return false
+	}
+
+	return true
+}
+
+func isOperator(char rune) bool {
+	if !strings.Contains(OPERATORS, string(char)) {
 		return false
 	}
 	return true
@@ -108,27 +119,23 @@ func tokenize(rollstring string) []string {
 	var nextchar rune
 	last_index := len(rollstring) - 1
 	// fmt.Printf("\nrollstring length: %d; last_index: %d", len(rollstring), last_index)
-
 	for i := 0; i <= last_index; i++ {
-		current_token := string(rollstring[i])
 		if i == last_index {
 			// fmt.Printf("Seek got last index. Recording token: ")
-			tokens = append(tokens, current_token)
+			tokens = append(tokens, string(rollstring[i]))
 			// fmt.Printf("%s", tokens)
 		}
 		for j := i + 1; j <= last_index; j++ {
 			// fmt.Printf("\ni: %d (%s), j:%d (%s)", i, string(rollstring[i]), j, string(rollstring[j]))
 			nextchar = rune(rollstring[j])
-			if strings.ContainsRune(OPERATORS, nextchar) {
+			if isOperator(nextchar) {
 				// fmt.Printf("got operator %s; recording tokens: ", string(nextchar))
-				tokens = append(tokens, current_token)
+				tokens = append(tokens, string(rollstring[i:j]))
 				tokens = append(tokens, string(nextchar))
 				// fmt.Printf("%s", tokens)
 				// fmt.Printf("\nSetting i to %d", j)
 				i = j
 				break
-			} else {
-				current_token = current_token + string(nextchar)
 			}
 		}
 	}
@@ -136,7 +143,7 @@ func tokenize(rollstring string) []string {
 }
 
 // Parse Roll String in format XdN +/- Y
-func parseRoll(rollstring string) []string {
+func ParseRoll(rollstring string) []string {
 	//TODO - implement me
 	// counts and sides cannot be zero (modifiers can be even if it's silly)
 	// Handle different ordered tokens e.g. mdn+x, x+mdn, mdn+kdn
@@ -165,6 +172,11 @@ func parseRoll(rollstring string) []string {
 	// var separators = [...]rune{'+', '-'}
 	// var d rune = 'd'
 	// var tokens = [...]string{}
+	if !isValidRoll(rollstring) {
+		fmt.Printf("Input roll string %s is invalid", rollstring)
+		// TODO : raise and handle a sensible exception.
+		return []string{}
+	}
 	rollstring = sanitize(rollstring)
 	tokens := tokenize(rollstring)
 	return tokens

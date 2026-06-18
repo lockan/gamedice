@@ -148,7 +148,7 @@ func TestTokenize(t *testing.T) {
 	var tokens []string
 	tokens = tokenize(teststring)
 	t.Logf("Test string: %s", teststring)
-	t.Logf("Tokens: %s", tokens)
+	t.Logf("Expected: %s; Tokens: %s", expected, tokens)
 	if len(expected) != len(tokens) {
 		t.Logf("Tokens array is different length than expected length")
 		t.Fail()
