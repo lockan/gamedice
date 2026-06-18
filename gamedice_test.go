@@ -6,6 +6,10 @@ import (
 	"testing"
 )
 
+// TOOD:
+// test against strings with multiple ddd in them
+// test against multiple sequential operators e.g. ++ -- +- etc.
+
 func TestRoll(t *testing.T) {
 	testroll := 1
 	t.Logf("Input is %d", testroll)

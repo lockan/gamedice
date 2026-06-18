@@ -84,11 +84,12 @@ func RollComplex(tokens []string) uint64 {
 			if err != nil {
 				defer panic(err)
 			}
-		} else if isOperator(token){
+			values = append(values, RollN(count, sides))
+		} else if isOperator(token) {
 			// TODO: IMPLEMENT
 			// 1. get next token
 			// 2. ... profit?
-			values = append(values, RollN(11))
+			values = append(values, RollN(1, 11))
 		} else {
 			// TODO: Handle static values
 			// ModifyRoll goes here ... I think?
@@ -101,15 +102,16 @@ func RollComplex(tokens []string) uint64 {
 
 // Adds or subtracts a static value from a previous subtotal
 func ModifyRoll(operator rune, subtotal uint64, staticvalue uint64) uint64 {
+	var result uint64
 	switch operator {
 	case '+':
-		result := subtotal + staticvalue
+		result = subtotal + staticvalue
 		defer overflowHandler(result, subtotal)
 	case '-':
-		result := subtotal - staticvalue
+		result = subtotal - staticvalue
 		// TODO: do I also need an underflow handler?
 	default:
-		defer panic("Not a valid operator: %s", string(operator))
+		defer panic(fmt.Sprintf("Not a valid operator: %s", string(operator)))
 	}
 	return result
 }
@@ -146,8 +148,8 @@ func isValidRoll(rollstring string) bool {
 	return true
 }
 
-func isOperator(char rune) bool {
-	if !strings.Contains(OPERATORS, string(char)) {
+func isOperator(opchar string) bool {
+	if !strings.Contains(OPERATORS, string(opchar)) {
 		return false
 	}
 	return true
@@ -175,7 +177,7 @@ func tokenize(rollstring string) []string {
 		for j := i + 1; j <= last_index; j++ {
 			// fmt.Printf("\ni: %d (%s), j:%d (%s)", i, string(rollstring[i]), j, string(rollstring[j]))
 			nextchar = rune(rollstring[j])
-			if isOperator(nextchar) {
+			if isOperator(string(nextchar)) {
 				// fmt.Printf("got operator %s; recording tokens: ", string(nextchar))
 				tokens = append(tokens, string(rollstring[i:j]))
 				tokens = append(tokens, string(nextchar))
@@ -189,14 +191,14 @@ func tokenize(rollstring string) []string {
 	return tokens
 }
 
-
 func ParseRoll(rollstring string) (uint64, uint64, Exception) {
-	count_str, sides_str, _ := strings.Cut(token, "d")
+	count_str, sides_str, _ := strings.Cut(rollstring, "d")
+	var count uint64
 	if count_str != "" {
 		count, err := strconv.ParseUint(count_str, 10, 64)
 		if err != nil {
 			fmt.Printf("failed to convert token %s to uint64", count_str)
-			return (nil, nil, err)
+			return count, 0, err
 		}
 	} else {
 		count = 1
@@ -204,10 +206,11 @@ func ParseRoll(rollstring string) (uint64, uint64, Exception) {
 	sides, err := strconv.ParseUint(sides_str, 10, 64)
 	if err != nil {
 		fmt.Printf("failed to convert token %s to uint64", count_str)
-		return (nil, nil, err)
+		return 0, 0, err
 	}
 	return count, sides, nil
 }
+
 // Parse Roll String in format XdN +/- Y and return a list of tokens
 func ParseRollString(rollstring string) []string {
 	//TODO - implement me
