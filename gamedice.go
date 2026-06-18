@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	rand "math/rand/v2"
+	"strconv"
 	"strings"
 )
 
@@ -41,6 +42,7 @@ func Roll(sides uint64) uint64 {
 }
 
 // Roll MdN dice and return the total value
+// Returns a single summed result
 func RollN(count uint64, sides uint64) uint64 {
 	defer zeroInputHandler(count)
 	defer zeroInputHandler(sides)
@@ -56,6 +58,7 @@ func RollN(count uint64, sides uint64) uint64 {
 }
 
 // Roll MdN as batch of M unique dice values of type dN
+// Returns multiple independent results, rather than a single sum
 func RollBatch(count uint64, sides uint64) []uint64 {
 	defer zeroInputHandler(count)
 	defer zeroInputHandler(sides)
@@ -65,6 +68,50 @@ func RollBatch(count uint64, sides uint64) []uint64 {
 		batch[i] = Roll(sides)
 	}
 	return batch
+}
+
+// Carries out a complex series of rolls from a list of roll tokens. e.g. parseRoll() results.
+// Returns the total result.
+func RollComplex(tokens []string) uint64 {
+	// TODO: Implement
+	values := []uint64{}
+	for i := range tokens {
+		token := tokens[i]
+		fmt.Printf("%s", token)
+		if isDieRoll(token) {
+			// TODO: IMPLEMENT
+			count, sides, err := ParseRoll(token)
+			if err != nil {
+				defer panic(err)
+			}
+		} else if isOperator(token){
+			// TODO: IMPLEMENT
+			// 1. get next token
+			// 2. ... profit?
+			values = append(values, RollN(11))
+		} else {
+			// TODO: Handle static values
+			// ModifyRoll goes here ... I think?
+			values = append(values, 13)
+		}
+	}
+	var result uint64
+	return result
+}
+
+// Adds or subtracts a static value from a previous subtotal
+func ModifyRoll(operator rune, subtotal uint64, staticvalue uint64) uint64 {
+	switch operator {
+	case '+':
+		result := subtotal + staticvalue
+		defer overflowHandler(result, subtotal)
+	case '-':
+		result := subtotal - staticvalue
+		// TODO: do I also need an underflow handler?
+	default:
+		defer panic("Not a valid operator: %s", string(operator))
+	}
+	return result
 }
 
 func sanitize(input string) string {
@@ -142,8 +189,27 @@ func tokenize(rollstring string) []string {
 	return tokens
 }
 
-// Parse Roll String in format XdN +/- Y
-func ParseRoll(rollstring string) []string {
+
+func ParseRoll(rollstring string) (uint64, uint64, Exception) {
+	count_str, sides_str, _ := strings.Cut(token, "d")
+	if count_str != "" {
+		count, err := strconv.ParseUint(count_str, 10, 64)
+		if err != nil {
+			fmt.Printf("failed to convert token %s to uint64", count_str)
+			return (nil, nil, err)
+		}
+	} else {
+		count = 1
+	}
+	sides, err := strconv.ParseUint(sides_str, 10, 64)
+	if err != nil {
+		fmt.Printf("failed to convert token %s to uint64", count_str)
+		return (nil, nil, err)
+	}
+	return count, sides, nil
+}
+// Parse Roll String in format XdN +/- Y and return a list of tokens
+func ParseRollString(rollstring string) []string {
 	//TODO - implement me
 	// counts and sides cannot be zero (modifiers can be even if it's silly)
 	// Handle different ordered tokens e.g. mdn+x, x+mdn, mdn+kdn
@@ -180,17 +246,6 @@ func ParseRoll(rollstring string) []string {
 	rollstring = sanitize(rollstring)
 	tokens := tokenize(rollstring)
 	return tokens
-}
-
-// Carries out a complex series of rolls from a list of roll tokens. e.g. parseRoll() results.
-// Returns the total result.
-func ComplexRoll(tokens []string) uint64 {
-	// TODO: Implement
-	for token := range tokens {
-		fmt.Printf("%s", tokens[token])
-	}
-	var result uint64
-	return result
 }
 
 // ===== misc private test functions
